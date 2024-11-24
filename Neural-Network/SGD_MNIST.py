@@ -93,7 +93,7 @@ def plot_unique_images_with_labels(dataset):
 train_set = read_train_set(20)  # Read 20 training images
 plot_unique_images_with_labels(train_set)
 
-'Ordinary training method'
+'Multi Layer Perceptron (MLP)'
 
 
 def sigmoid(x): return 1 / (1 + np.exp(-x))
@@ -109,7 +109,7 @@ def initialization(input_size, hidden_size, output_size):
 
 
 def forward_propagation(data, W1, W2, W3, bias):
-    b1, b2, b3 = 0, 0, 0
+    b1, b2, b3 = np.zeros(1), np.zeros(1), np.zeros(1)
     net1 = W1 @ data + b1
     act1 = sigmoid(net1)
     net2 = W2 @ act1 + b2
@@ -157,5 +157,5 @@ def evaluate(train_set):
 train_set = read_train_set(600)  # Read the first 600 images from the training set
 accuracy, duration = evaluate(train_set)  # Evaluate the network
 
-'Implementing Backpropagation: Stochastic Gradient Descent(SGD)'
+'Training the MLP by implementing Backpropagation: Stochastic Gradient Descent(SGD)'
 
