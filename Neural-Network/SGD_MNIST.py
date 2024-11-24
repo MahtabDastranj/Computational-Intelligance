@@ -95,3 +95,67 @@ plot_unique_images_with_labels(train_set)
 
 'Ordinary training method'
 
+
+def sigmoid(x): return 1 / (1 + np.exp(-x))
+
+
+def initialization(input_size, hidden_size, output_size):
+    np.random.seed(42)
+    W1 = np.random.normal(0, 1, (hidden_size, input_size))
+    W2 = np.random.normal(0, 1, (hidden_size, hidden_size))
+    W3 = np.random.normal(0, 1, (output_size, hidden_size))
+    bias = np.zeros((output_size, 1))
+    return W1, W2, W3, bias
+
+
+def forward_propagation(data, W1, W2, W3, bias):
+    b1, b2, b3 = 0, 0, 0
+    net1 = W1 @ data + b1
+    act1 = sigmoid(net1)
+    net2 = W2 @ act1 + b2
+    act2 = sigmoid(net2)
+    net3 = W3 @ act2 + b3
+    act3 = sigmoid(net3)
+    return act3
+
+
+def selection(ac3): return np.argmax(ac3, axis=0)
+
+
+def evaluate(train_set):
+    input_size = 784
+    hidden_size = 16
+    output_size = 10
+
+    # Initialize weights and biases
+    W1, W2, W3, bias = initialization(input_size, hidden_size, output_size)
+
+    # Extract data and labels
+    data = np.hstack([x[0] for x in train_set])  # Images as column vectors
+    labels = np.hstack([x[1] for x in train_set])  # Labels as column vectors
+
+    start_time = time.time()
+
+    # Perform forward propagation
+    output = forward_propagation(data, W1, W2, W3, bias)
+
+    # Convert output to predictions
+    predictions = selection(output)
+    true_labels = np.argmax(labels, axis=0)
+
+    # Calculate accuracy
+    accuracy = np.sum(predictions == true_labels) / len(true_labels)
+
+    duration = time.time() - start_time
+
+    print(f"Accuracy: {accuracy * 100:.2f}%")
+    print(f"Duration: {duration:.6f} seconds")
+
+    return accuracy, duration
+
+
+train_set = read_train_set(600)  # Read the first 600 images from the training set
+accuracy, duration = evaluate(train_set)  # Evaluate the network
+
+'Implementing Backpropagation: Stochastic Gradient Descent(SGD)'
+
