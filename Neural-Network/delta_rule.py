@@ -2,20 +2,19 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 
-'Q N0. 1'
 # Define inputs and target for NOR gate
 inputs = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
 target = np.array([1, 0, 0, 0])
 lr = 0.1  # Learning rate
 
-def error(output, target):
-    return target - output
 
-def delta_theta(lr, error):
-    return -1 * lr * error
+def error(output, target): return target - output
 
-def delta_w(lr, error, x):
-    return lr * error * x
+
+def delta_theta(lr, error): return -1 * lr * error
+
+
+def delta_w(lr, error, x): return lr * error * x
 
 
 # Online Training
@@ -52,6 +51,7 @@ def online_training(inputs, target, lr, w1, w2, theta):
 
     return w1, w2, theta
 
+
 # Batch Training
 def batch_training(inputs, target, lr, w1, w2, theta):
     epoch = 1
@@ -79,10 +79,7 @@ def batch_training(inputs, target, lr, w1, w2, theta):
         w1 += delta_w1
         w2 += delta_w2
         theta += delta_t
-
-        # Normalize weights
-        w1 /= 1.001
-        w2 /= 1.001
+        lr /= 1.001
 
         # Check if total error is zero (convergence)
         if total_error == 0:
@@ -95,19 +92,19 @@ def batch_training(inputs, target, lr, w1, w2, theta):
 
 
 # Initialize weights and threshold randomly
-w1 = np.random.random()
-w2 = np.random.random()
-theta = np.random.random()
-
-print("Online Training")
-w1, w2, theta = online_training(inputs, target, lr, w1, w2, theta)
-print(f"Final Weights: w1 = {w1}, w2 = {w2}, Threshold (theta) = {theta}")
+w1_online = np.random.random()
+w2_online = np.random.random()
+theta_online = np.random.random()
 
 # Reinitialize weights and threshold for batch training
-w1 = np.random.random()
-w2 = np.random.random()
-theta = np.random.random()
+w1_batch = np.random.random()
+w2_batch = np.random.random()
+theta_batch = np.random.random()
 
+print("Online Training")
+w1_online, w2_online, theta_online = online_training(inputs, target, lr, w1_online, w2_online, theta_online)
+print(f"Final Weights: w1 = {w1_online}, w2 = {w2_online}, Threshold (theta) = {theta_online}")
 print("\nBatch Training")
-w1, w2, theta = batch_training(inputs, target, lr, w1, w2, theta)
-print(f"Final Weights: w1 = {w1}, w2 = {w2}, Threshold (theta) = {theta}")
+w1_batch, w2_batch, theta_batch = batch_training(inputs, target, lr, w1_batch, w2_batch, theta_batch)
+print(f"Final Weights: w1 = {w1_batch}, w2 = {w2_batch}, Threshold (theta) = {theta_batch}")
+
