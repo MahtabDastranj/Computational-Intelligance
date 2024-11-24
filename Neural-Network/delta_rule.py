@@ -37,10 +37,7 @@ def online_training(inputs, target, lr, w1, w2, theta):
             w1 += delta_w1
             w2 += delta_w2
             theta += delta_theta(lr, e)
-
-            # Normalize weights
-            w1 /= 1.001
-            w2 /= 1.001
+            lr /= 1.001
 
         # Check if total error is zero (convergence)
         if total_error == 0:

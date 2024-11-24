@@ -93,3 +93,5 @@ def plot_unique_images_with_labels(dataset):
 train_set = read_train_set(20)  # Read 20 training images
 plot_unique_images_with_labels(train_set)
 
+'Ordinary training method'
+
