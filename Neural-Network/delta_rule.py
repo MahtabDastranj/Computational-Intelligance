@@ -16,7 +16,7 @@ def delta_theta(lr, error): return -1 * lr * error
 def delta_w(lr, error, x): return lr * error * x
 
 
-def net(x1, x2, w1, w2, theta): return (x1 * w1) + (x2 * w2) - theta
+def net(x1, x2, w1, w2, theta): return ((x1 * w1) + (x2 * w2) - theta)
 
 
 # Online Training
@@ -62,7 +62,6 @@ def batch_training(inputs, target, lr, w1, w2, theta):
         for input, target_value in zip(inputs, target):
             output = 1 if net(input[0], input[1], w1, w2, theta) >= 0 else 0
 
-            # Calculate error
             e = error(output, target_value)
             total_error += abs(e)
 
@@ -77,7 +76,6 @@ def batch_training(inputs, target, lr, w1, w2, theta):
         theta += delta_t
         lr /= 1.001
 
-        # Check if total error is zero (convergence)
         if total_error == 0:
             print(f"Batch Training completed in {epoch} epochs.")
             break
@@ -88,14 +86,13 @@ def batch_training(inputs, target, lr, w1, w2, theta):
 
 
 # Initialize weights and threshold randomly
-w1_online = np.random.uniform(-1, 1)
-w2_online = np.random.uniform(-1, 1)
-theta_online = np.random.uniform(-1, 1)
+w1_online = np.random.uniform(-0.1, 0.1)
+w2_online = np.random.uniform(-0.1, 0.1)
+theta_online = np.random.uniform(-0.1, 0.1)
 
-# Initialize weights and threshold for batch training
-w1_batch = np.random.uniform(-1, 1)
-w2_batch = np.random.uniform(-1, 1)
-theta_batch = np.random.uniform(-1, 1)
+w1_batch = np.random.uniform(-0.1, 0.1)
+w2_batch = np.random.uniform(-0.1, 0.1)
+theta_batch = np.random.uniform(-0.1, 0.1)
 
 print("Online Training")
 w1_online, w2_online, theta_online = online_training(inputs, target, lr, w1_online, w2_online, theta_online)
@@ -106,14 +103,10 @@ print(f"Final Weights: w1 = {w1_batch}, w2 = {w2_batch}, Threshold (theta) = {th
 
 for input, target_value in zip(inputs, target):
     x1, x2 = input
-    index = inputs.index(input)
-    print("Online Training")
     output_online = 1 if net(x1, x2, w1_online, w2_online, theta_online) > 0 else 0
-    print(f'Input: ({x1}, {x2}), Predicted: {output_online}, Target: {target}')
-    print("\nBatch Training")
     output_batch = 1 if net(x1, x2, w1_batch, w2_batch, theta_batch) > 0 else 0
-    print(f'Input: ({x1}, {x2}), Predicted: {output_batch}, Target: {target}\n')
-
+    print(f'Input: ({x1}, {x2}), Online training prediction: {output_online}, Batch training prediction: {output_batch}'
+          f', Target: {target_value}')
 
 x1 = np.linspace(-0.5, 1, 150)
 x2_online = -(w1_online * x1 + theta_online) / w2_online
