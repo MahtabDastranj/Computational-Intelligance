@@ -1,8 +1,7 @@
 import numpy as np
-import time
 import matplotlib.pyplot as plt
 
-# Define inputs and target for NOR gate
+# NOR gate
 inputs = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
 target = np.array([1, 0, 0, 0])
 lr = 0.1  # Learning rate
@@ -17,15 +16,17 @@ def delta_theta(lr, error): return -1 * lr * error
 def delta_w(lr, error, x): return lr * error * x
 
 
+def net(x1, x2, w1, w2, theta): return (x1 * w1) + (x2 * w2) - theta
+
+
 # Online Training
 def online_training(inputs, target, lr, w1, w2, theta):
     epoch = 1
     while True:
         total_error = 0
         for input, target_value in zip(inputs, target):
-            # Calculate net input (sigma) and output
-            sigma = (input[0] * w1) + (input[1] * w2)
-            output = 1 if sigma >= theta else 0
+            # Calculate net input and output
+            output = 1 if net(input[0], input[1], w1, w2, theta) >= 0 else 0
 
             # Calculate error
             e = error(output, target_value)
@@ -56,12 +57,10 @@ def batch_training(inputs, target, lr, w1, w2, theta):
         total_error = 0
         delta_w1 = 0
         delta_w2 = 0
-        delta_t = 0  # Renamed to avoid shadowing
+        delta_t = 0
 
         for input, target_value in zip(inputs, target):
-            # Calculate net input (sigma) and output
-            sigma = (input[0] * w1) + (input[1] * w2)
-            output = 1 if sigma >= theta else 0
+            output = 1 if net(input[0], input[1], w1, w2, theta) >= 0 else 0
 
             # Calculate error
             e = error(output, target_value)
@@ -89,14 +88,14 @@ def batch_training(inputs, target, lr, w1, w2, theta):
 
 
 # Initialize weights and threshold randomly
-w1_online = np.random.random()
-w2_online = np.random.random()
-theta_online = np.random.random()
+w1_online = np.random.uniform(-1, 1)
+w2_online = np.random.uniform(-1, 1)
+theta_online = np.random.uniform(-1, 1)
 
-# Reinitialize weights and threshold for batch training
-w1_batch = np.random.random()
-w2_batch = np.random.random()
-theta_batch = np.random.random()
+# Initialize weights and threshold for batch training
+w1_batch = np.random.uniform(-1, 1)
+w2_batch = np.random.uniform(-1, 1)
+theta_batch = np.random.uniform(-1, 1)
 
 print("Online Training")
 w1_online, w2_online, theta_online = online_training(inputs, target, lr, w1_online, w2_online, theta_online)
@@ -105,3 +104,32 @@ print("\nBatch Training")
 w1_batch, w2_batch, theta_batch = batch_training(inputs, target, lr, w1_batch, w2_batch, theta_batch)
 print(f"Final Weights: w1 = {w1_batch}, w2 = {w2_batch}, Threshold (theta) = {theta_batch}")
 
+for input, target_value in zip(inputs, target):
+    x1, x2 = input
+    index = inputs.index(input)
+    print("Online Training")
+    output_online = 1 if net(x1, x2, w1_online, w2_online, theta_online) > 0 else 0
+    print(f'Input: ({x1}, {x2}), Predicted: {output_online}, Target: {target}')
+    print("\nBatch Training")
+    output_batch = 1 if net(x1, x2, w1_batch, w2_batch, theta_batch) > 0 else 0
+    print(f'Input: ({x1}, {x2}), Predicted: {output_batch}, Target: {target}\n')
+
+
+x1 = np.linspace(-0.5, 1, 150)
+x2_online = -(w1_online * x1 + theta_online) / w2_online
+x2_batch = -(w1_batch * x1 + theta_batch) / w2_batch
+
+plt.plot(x1, x2_online, label="Online Training")
+plt.plot(x1, x2_batch, label="Batch Training")
+
+for input, target_value in zip(inputs, target):
+    x1, x2 = input
+    color = 'red' if target_value == 0 else 'blue'
+    plt.scatter(x1, x2, color=color)
+
+plt.legend
+plt.xlabel('x1')
+plt.ylabel('x2')
+plt.title('Discriminating line of the thought perceptron')
+plt.grid(True)
+plt.show()
