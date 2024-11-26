@@ -1,31 +1,39 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# NOR gate
+# NOR gate inputs and targets
 inputs = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
 target = np.array([1, 0, 0, 0])
 lr = 0.1  # Learning rate
 
 
-def error(output, target): return target - output
+def error(output, target):
+    return target - output
 
 
-def delta_theta(lr, error): return lr * error
+def delta_theta(lr, error):
+    return lr * error
 
 
-def delta_w(lr, error, x): return lr * error * x
+def delta_w(lr, error, x):
+    return lr * error * x
 
 
-def net(x1, x2, w1, w2, theta): return x1 * w1 + x2 * w2 - theta
+def net(x1, x2, w1, w2, theta):
+    return x1 * w1 + x2 * w2 - theta
 
 
 # Online Training
 def online_training(inputs, target, lr, w1, w2, theta):
     epoch = 1
-    while True:
+    max_epochs = 20
+    decision_boundaries = []
+
+    while epoch < max_epochs:
         total_error = 0
+
         for input, target_value in zip(inputs, target):
-            # Calculate net input and output
+            # Calculate output
             output = 1 if net(input[0], input[1], w1, w2, theta) >= 0 else 0
 
             # Calculate error
@@ -33,27 +41,32 @@ def online_training(inputs, target, lr, w1, w2, theta):
             total_error += abs(e)
 
             # Update weights and threshold
-            delta_w1 = delta_w(lr, e, input[0])
-            delta_w2 = delta_w(lr, e, input[1])
-            w1 += delta_w1
-            w2 += delta_w2
+            w1 += delta_w(lr, e, input[0])
+            w2 += delta_w(lr, e, input[1])
             theta -= delta_theta(lr, e)
-            lr /= 1.001
 
-        # Check if total error is zero (convergence)
+        if w2 != 0:
+            x_vals = np.linspace(-0.1, 1.1, 100)
+            y_vals = -(w1 * x_vals - theta) / w2
+            decision_boundaries.append((x_vals, y_vals))
+
         if total_error == 0:
             print(f"Online Training completed in {epoch} epochs.")
+            print(f'w1 = {w1}, w2 = {w2}, theta = {theta}')
             break
 
         epoch += 1
 
-    return w1, w2, theta
+    return w1, w2, theta, decision_boundaries
 
 
 # Batch Training
 def batch_training(inputs, target, lr, w1, w2, theta):
     epoch = 1
-    while epoch < 15:
+    max_epochs = 20
+    decision_boundaries = []
+
+    while epoch < max_epochs:
         total_error = 0
         delta_w1 = 0
         delta_w2 = 0
@@ -65,7 +78,7 @@ def batch_training(inputs, target, lr, w1, w2, theta):
             e = error(output, target_value)
             total_error += abs(e)
 
-            # Accumulate weight and threshold updates
+            # Accumulate updates
             delta_w1 += delta_w(lr, e, input[0])
             delta_w2 += delta_w(lr, e, input[1])
             delta_t -= delta_theta(lr, e)
@@ -74,55 +87,75 @@ def batch_training(inputs, target, lr, w1, w2, theta):
         w1 += delta_w1
         w2 += delta_w2
         theta += delta_t
-        lr /= 1.001
+
+        if w2 != 0:
+            x_vals = np.linspace(-0.1, 1.1, 100)
+            y_vals = -(w1 * x_vals - theta) / w2
+            decision_boundaries.append((x_vals, y_vals))
 
         if total_error == 0:
             print(f"Batch Training completed in {epoch} epochs.")
+            print(f'w1 = {w1}, w2 = {w2}, theta = {theta}')
             break
 
         epoch += 1
 
-    return w1, w2, theta
+    return w1, w2, theta, decision_boundaries
 
 
-# Initialize weights and threshold randomly
-w1_online = np.random.uniform(-0.1, 0.1)
-w2_online = np.random.uniform(-0.1, 0.1)
-theta_online = np.random.uniform(-0.1, 0.1)
+# Initialize weights and thresholds randomly
+np.random.seed(42)
+w1_online, w2_online, theta_online = np.random.uniform(-0.1, 0.1, 3)
+w1_batch, w2_batch, theta_batch = np.random.uniform(-0.1, 0.1, 3)
 
-w1_batch = np.random.uniform(-0.1, 0.1)
-w2_batch = np.random.uniform(-0.1, 0.1)
-theta_batch = np.random.uniform(-0.1, 0.1)
+# Train perceptrons using online and batch training
+print("Training Online...")
+w1_online, w2_online, theta_online, online_decision_boundaries = online_training(
+    inputs, target, lr, w1_online, w2_online, theta_online
+)
 
-print("Online Training")
-w1_online, w2_online, theta_online = online_training(inputs, target, lr, w1_online, w2_online, theta_online)
-print(f"Final Weights: w1 = {w1_online}, w2 = {w2_online}, Threshold (theta) = {theta_online}")
-print("\nBatch Training")
-w1_batch, w2_batch, theta_batch = batch_training(inputs, target, lr, w1_batch, w2_batch, theta_batch)
-print(f"Final Weights: w1 = {w1_batch}, w2 = {w2_batch}, Threshold (theta) = {theta_batch}")
+print("Training Batch...")
+w1_batch, w2_batch, theta_batch, batch_decision_boundaries = batch_training(
+    inputs, target, lr, w1_batch, w2_batch, theta_batch
+)
 
+# Visualization
+fig, axs = plt.subplots(2, 1, figsize=(16, 6))
+
+# Online Training Plot
+axs[0].set_title("Online Training")
+for i, (x_vals, y_vals) in enumerate(online_decision_boundaries):
+    axs[0].plot(x_vals, y_vals, linestyle="--", alpha=0.3, label=f"Epoch {i + 1}")
+x_vals = np.linspace(-0.1, 1.1, 100)
+y_vals = -(w1_online * x_vals - theta_online) / w2_online
+axs[0].plot(x_vals, y_vals, color="red", label="Final Decision Boundary")
 for input, target_value in zip(inputs, target):
+    color = "blue" if target_value == 1 else "green"
+    axs[0].scatter(input[0], input[1], color=color, s=100, label=f"Class {target_value}")
+
+# Batch Training Plot
+axs[1].set_title("Batch Training")
+for i, (x_vals, y_vals) in enumerate(batch_decision_boundaries):
+    axs[1].plot(x_vals, y_vals, linestyle="--", alpha=0.3, label=f"Epoch {i + 1}")
+x_vals = np.linspace(-0.1, 1.1, 100)
+y_vals = -(w1_batch * x_vals - theta_batch) / w2_batch
+axs[1].plot(x_vals, y_vals, color="red", label="Final Decision Boundary")
+for input, target_value in zip(inputs, target):
+    color = "blue" if target_value == 1 else "green"
+    axs[1].scatter(input[0], input[1], color=color, s=100, label=f"Class {target_value}")
+
+for ax in axs:
+    ax.set_xlabel("x1")
+    ax.set_ylabel("x2")
+    ax.legend(loc="best", fontsize="small")
+    ax.grid(True)
+
+plt.tight_layout()
+plt.show()
+
+'''for input, target_value in zip(inputs, target):
     x1, x2 = input
     output_online = 1 if net(x1, x2, w1_online, w2_online, theta_online) > 0 else 0
     output_batch = 1 if net(x1, x2, w1_batch, w2_batch, theta_batch) > 0 else 0
     print(f'Input: ({x1}, {x2}), Online training prediction: {output_online}, Batch training prediction: {output_batch}'
-          f', Target: {target_value}')
-
-x1 = np.linspace(-0.2, 1.2, 150)
-x2_online = -(w1_online * x1 + theta_online) / w2_online
-x2_batch = -(w1_batch * x1 + theta_batch) / w2_batch
-
-plt.plot(x1, x2_online, label="Online Training")
-plt.plot(x1, x2_batch, label="Batch Training")
-
-for input, target_value in zip(inputs, target):
-    x1, x2 = input
-    color = 'red' if target_value == 0 else 'blue'
-    plt.scatter(x1, x2, color=color)
-
-plt.legend()
-plt.xlabel('x1')
-plt.ylabel('x2')
-plt.title('Discriminating line of the thought perceptron (Decision boundary)')
-plt.grid(True)
-plt.show()
+          f', Target: {target_value}')'''
