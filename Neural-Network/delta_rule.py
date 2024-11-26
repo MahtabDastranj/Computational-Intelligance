@@ -10,13 +10,13 @@ lr = 0.1  # Learning rate
 def error(output, target): return target - output
 
 
-def delta_theta(lr, error): return -1 * lr * error
+def delta_theta(lr, error): return lr * error
 
 
 def delta_w(lr, error, x): return lr * error * x
 
 
-def net(x1, x2, w1, w2, theta): return ((x1 * w1) + (x2 * w2) - theta)
+def net(x1, x2, w1, w2, theta): return x1 * w1 + x2 * w2 - theta
 
 
 # Online Training
@@ -37,7 +37,7 @@ def online_training(inputs, target, lr, w1, w2, theta):
             delta_w2 = delta_w(lr, e, input[1])
             w1 += delta_w1
             w2 += delta_w2
-            theta += delta_theta(lr, e)
+            theta -= delta_theta(lr, e)
             lr /= 1.001
 
         # Check if total error is zero (convergence)
@@ -53,7 +53,7 @@ def online_training(inputs, target, lr, w1, w2, theta):
 # Batch Training
 def batch_training(inputs, target, lr, w1, w2, theta):
     epoch = 1
-    while True:
+    while epoch < 15:
         total_error = 0
         delta_w1 = 0
         delta_w2 = 0
@@ -68,7 +68,7 @@ def batch_training(inputs, target, lr, w1, w2, theta):
             # Accumulate weight and threshold updates
             delta_w1 += delta_w(lr, e, input[0])
             delta_w2 += delta_w(lr, e, input[1])
-            delta_t += delta_theta(lr, e)
+            delta_t -= delta_theta(lr, e)
 
         # Apply updates
         w1 += delta_w1
@@ -108,7 +108,7 @@ for input, target_value in zip(inputs, target):
     print(f'Input: ({x1}, {x2}), Online training prediction: {output_online}, Batch training prediction: {output_batch}'
           f', Target: {target_value}')
 
-x1 = np.linspace(-0.5, 1, 150)
+x1 = np.linspace(-0.2, 1.2, 150)
 x2_online = -(w1_online * x1 + theta_online) / w2_online
 x2_batch = -(w1_batch * x1 + theta_batch) / w2_batch
 
@@ -120,9 +120,9 @@ for input, target_value in zip(inputs, target):
     color = 'red' if target_value == 0 else 'blue'
     plt.scatter(x1, x2, color=color)
 
-plt.legend
+plt.legend()
 plt.xlabel('x1')
 plt.ylabel('x2')
-plt.title('Discriminating line of the thought perceptron')
+plt.title('Discriminating line of the thought perceptron (Decision boundary)')
 plt.grid(True)
 plt.show()
