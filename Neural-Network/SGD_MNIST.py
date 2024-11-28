@@ -108,7 +108,7 @@ def initialization(input_size, hidden_size, output_size):
     return W1, W2, W3, bias
 
 
-def forward_propagation(data, W1, W2, W3, bias):
+def forward_propagation(data, W1, W2, W3):
     b1, b2, b3 = np.zeros(1), np.zeros(1), np.zeros(1)
     net1 = W1 @ data + b1
     act1 = sigmoid(net1)
@@ -120,6 +120,9 @@ def forward_propagation(data, W1, W2, W3, bias):
 
 
 def selection(ac3): return np.argmax(ac3, axis=0)
+
+
+def accuracy(predictions, true_labels): return np.sum(predictions == true_labels) / len(true_labels)
 
 
 def evaluate(train_set):
@@ -137,25 +140,25 @@ def evaluate(train_set):
     start_time = time.time()
 
     # Perform forward propagation
-    output = forward_propagation(data, W1, W2, W3, bias)
+    output = forward_propagation(data, W1, W2, W3)
 
     # Convert output to predictions
     predictions = selection(output)
     true_labels = np.argmax(labels, axis=0)
 
     # Calculate accuracy
-    accuracy = np.sum(predictions == true_labels) / len(true_labels)
+    precision = accuracy(predictions, true_labels)
 
     duration = time.time() - start_time
 
-    print(f"Accuracy: {accuracy * 100:.2f}%")
+    print(f"Accuracy: {precision * 100:.2f}%")
     print(f"Duration: {duration:.6f} seconds")
 
-    return accuracy, duration
+    return precision, duration
 
 
 train_set = read_train_set(600)  # Read the first 600 images from the training set
-accuracy, duration = evaluate(train_set)  # Evaluate the network
+precision, duration = evaluate(train_set)  # Evaluate the network
 
 'Training the MLP by implementing Backpropagation: Stochastic Gradient Descent(SGD)'
 
