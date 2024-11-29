@@ -168,19 +168,19 @@ def sigmoid_derivative(x):
 
 
 # Backward propagation
-def back_propagation(X, Y, act1, act2, act3, W1, W2, W3, lr, b1, b2, b3):
+def back_propagation(X, Y, act1, act2, act3, net1, net2, W1, W2, W3, lr, b1, b2, b3):
     # Output layer error
     dZ3 = act3 - Y  # [10 x batch_size]
     dW3 = np.dot(dZ3, act2.T) / X.shape[1]  # [10 x 16]
     db3 = np.sum(dZ3, axis=1, keepdims=True) / X.shape[1]  # [10 x 1]
 
     # Hidden layer 2 error
-    dZ2 = np.dot(W3.T,  dZ3) * sigmoid_derivative(act2)  # [16 x batch_size]
+    dZ2 = np.dot(W3.T,  dZ3) * sigmoid_derivative(net2)  # [16 x batch_size]
     dW2 = np.dot(dZ2, act1.T) / X.shape[1]  # [16 x 16]
     db2 = np.sum(dZ2, axis=1, keepdims=True) / X.shape[1]  # [16 x 1]
 
     # Hidden layer 1 error
-    dZ1 = np.dot(W2.T, dZ2) * sigmoid_derivative(act1)  # [16 x batch_size]
+    dZ1 = np.dot(W2.T, dZ2) * sigmoid_derivative(net1)  # [16 x batch_size]
     dW1 = np.dot(dZ1, X.T) / X.shape[1]  # [16 x 784]
     db1 = np.sum(dZ1, axis=1, keepdims=True) / X.shape[1]  # [16 x 1]
 
@@ -227,7 +227,7 @@ def train_sgd(train_set, input_size, hidden_size, output_size, batch_size, lr, e
             net1, act1, net2, act2, net3, act3 = forward_propagation(X_batch, W1, W2, W3, b1, b2, b3)
 
             # Backward pass
-            W1, b1, W2, b2, W3, b3 = back_propagation(X_batch, Y_batch, act1, act2, act3, W1, W2, W3, lr, b1, b2, b3)
+            W1, b1, W2, b2, W3, b3 = back_propagation(X_batch, Y_batch, act1, act2, act3, net1, net2, W1, W2, W3, lr, b1, b2, b3)
 
         # Compute loss at the end of each epoch
         _, _, _, _, _, A3_full = forward_propagation(data, W1, W2, W3, b1, b2, b3)
@@ -257,7 +257,7 @@ hidden_size = 16
 output_size = 10
 batch_size = 6
 lr = 1
-epochs = 200
+epochs = 100
 read = 600
 
 # Main Script
@@ -304,6 +304,7 @@ W1, b1, W2, b2, W3, b3, loss_values, duration = train_sgd(
 )
 
 # Evaluate accuracy
+print('Testing Training data thoroughly')
 acc = sgd_evaluate(data, labels, W1, b1, W2, b2, W3, b3, read_total)
 print(f"Accuracy: {acc * 100:.2f}%")
 
@@ -311,7 +312,39 @@ print(f"Accuracy: {acc * 100:.2f}%")
 plt.plot(range(1, epochs + 1), loss_values, label="Loss")
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
-plt.title("Training Loss Over Epochs")
+plt.title("Loss Over Epochs for all of Training Data")
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Validation Data
+print('Testing Validation data')
+input_size = 784
+hidden_size = 16
+output_size = 10
+batch_size = 60
+lr = 1
+epochs = 10
+read_total = 10000
+
+test_set = read_test_set(read_total)  # Load the first 60000 images
+data = np.hstack([x[0] for x in test_set])  # Input data
+labels = np.hstack([x[1] for x in test_set])  # One-hot encoded labels
+
+# Train the network
+W1, b1, W2, b2, W3, b3, loss_values, duration = train_sgd(
+    train_set, input_size, hidden_size, output_size, batch_size, lr, epochs
+)
+
+# Evaluate accuracy
+acc = sgd_evaluate(data, labels, W1, b1, W2, b2, W3, b3, read_total)
+print(f"Accuracy: {acc * 100:.2f}%")
+
+# Plot loss over epochs
+plt.plot(range(1, epochs + 1), loss_values, label="Loss")
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+plt.title("Loss Over Epochs for Validation Data")
 plt.legend()
 plt.grid(True)
 plt.show()
