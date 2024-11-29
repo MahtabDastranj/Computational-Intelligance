@@ -241,8 +241,6 @@ def train_sgd(train_set, input_size, hidden_size, output_size, batch_size, lr, e
     return W1, b1, W2, b2, W3, b3, loss_values, duration
 
 
-
-
 # Evaluate Function
 def sgd_evaluate(data, labels, W1, b1, W2, b2, W3, b3, read):
     _, _, _, _, _, A3 = forward_propagation(data, W1, W2, W3, b1, b2, b3)
@@ -332,9 +330,8 @@ data = np.hstack([x[0] for x in test_set])  # Input data
 labels = np.hstack([x[1] for x in test_set])  # One-hot encoded labels
 
 # Train the network
-W1, b1, W2, b2, W3, b3, loss_values, duration = train_sgd(
-    train_set, input_size, hidden_size, output_size, batch_size, lr, epochs
-)
+W1, b1, W2, b2, W3, b3, loss_values, duration = train_sgd(train_set, input_size, hidden_size, output_size,
+                                                          batch_size, lr, epochs)
 
 # Evaluate accuracy
 acc = sgd_evaluate(data, labels, W1, b1, W2, b2, W3, b3, read_total)
