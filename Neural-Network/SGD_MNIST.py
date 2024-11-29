@@ -168,7 +168,7 @@ def sigmoid_derivative(x):
 
 
 # Backward propagation
-def backward_propagation(X, Y, net1, act1, net2, act2, net3, act3, W1, W2, W3, lr, b1, b2, b3):
+def back_propagation(X, Y, net1, act1, net2, act2, net3, act3, W1, W2, W3, lr, b1, b2, b3):
     # Output layer error
     dZ3 = act3 - Y  # [10 x batch_size]
     dW3 = dZ3 @ act2.T  # [10 x 16]
@@ -195,7 +195,6 @@ def backward_propagation(X, Y, net1, act1, net2, act2, net3, act3, W1, W2, W3, l
     return W1, b1, W2, b2, W3, b3
 
 
-# Calculate the loss
 # Loss function with batch normalization
 def mle(Y, A3):
     return 0.5 * np.sum((Y - A3) ** 2) / Y.shape[1]
@@ -228,7 +227,7 @@ def train_sgd(train_set, input_size, hidden_size, output_size, batch_size, lr, e
             net1, act1, net2, act2, net3, act3 = forward_propagation(X_batch, W1, W2, W3, b1, b2, b3)
 
             # Backward pass
-            W1, b1, W2, b2, W3, b3 = backward_propagation(
+            W1, b1, W2, b2, W3, b3 = back_propagation(
                 X_batch, Y_batch, net1, act1, net2, act2, net3, act3, W1, W2, W3, lr, b1, b2, b3
             )
 
