@@ -159,14 +159,14 @@ def plot_errors(errors):
 
 def main():
     # Extract the first 600 images
-    train_set = read_train_set(600)
+    train_set = read_train_set(60000)
     images = np.hstack([image for image, label in train_set])
     labels = np.hstack([label for image, label in train_set])
 
     # Parameters
-    batch_size = 6
+    batch_size = 60
     learning_rate = 1
-    epochs = 100
+    epochs = 10
 
     # Train model
     start_time = time.time()
