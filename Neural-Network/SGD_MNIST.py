@@ -105,21 +105,22 @@ def initialization(input_size, hidden_size, output_size):
     W2 = np.random.normal(0, 1, (hidden_size, hidden_size))
     W3 = np.random.normal(0, 1, (output_size, hidden_size))
     bias = np.zeros((output_size, 1))
-    return W1, W2, W3, bias
+    b1, b2, b3 = np.zeros((hidden_size, 1)), np.zeros((hidden_size, 1)), np.zeros((output_size, 1))
+
+    return W1, W2, W3, bias, b1, b2, b3
 
 
-def forward_propagation(data, W1, W2, W3):
-    b1, b2, b3 = np.zeros(1), np.zeros(1), np.zeros(1)
+def forward_propagation(data, W1, W2, W3, b1, b2, b3):
     net1 = W1 @ data + b1
     act1 = sigmoid(net1)
     net2 = W2 @ act1 + b2
     act2 = sigmoid(net2)
     net3 = W3 @ act2 + b3
     act3 = sigmoid(net3)
-    return act3
+    return net1, act1, net2, act2, net3, act3
 
 
-def selection(ac3): return np.argmax(ac3, axis=0)
+def selection(act3): return np.argmax(act3, axis=0)
 
 
 def accuracy(predictions, true_labels): return np.sum(predictions == true_labels) / len(true_labels)
@@ -131,7 +132,7 @@ def evaluate(train_set):
     output_size = 10
 
     # Initialize weights and biases
-    W1, W2, W3, bias = initialization(input_size, hidden_size, output_size)
+    W1, W2, W3, bias, b1, b2, b3 = initialization(input_size, hidden_size, output_size)
 
     # Extract data and labels
     data = np.hstack([x[0] for x in train_set])  # Images as column vectors
@@ -140,7 +141,7 @@ def evaluate(train_set):
     start_time = time.time()
 
     # Perform forward propagation
-    output = forward_propagation(data, W1, W2, W3)
+    _, _, _, _, _, output = forward_propagation(data, W1, W2, W3, b1, b2, b3)
 
     # Convert output to predictions
     predictions = selection(output)
@@ -162,3 +163,123 @@ precision, duration = evaluate(train_set)  # Evaluate the network
 
 'Training the MLP by implementing Backpropagation: Stochastic Gradient Descent(SGD)'
 
+
+def sigmoid_derivative(x):
+    return sigmoid(x) * (1 - sigmoid(x))
+
+
+# Backward propagation
+def backward_propagation(X, Y, net1, act1, net2, act2, net3, act3, W1, W2, W3, lr, b1, b2, b3):
+    # Output layer error
+    dZ3 = act3 - Y
+
+    dW3 = dZ3 @ act2.T
+    db3 = np.sum(dZ3, axis=1, keepdims=True)
+
+    # Hidden layer 2 error
+    dZ2 = (W3.T @ dZ3) * sigmoid_derivative(net2)
+    dW2 = dZ2 @ act1.T
+    db2 = np.sum(dZ2, axis=1, keepdims=True)
+
+    # Hidden layer 1 error
+    dZ1 = (W2.T @ dZ2) * sigmoid_derivative(net1)
+    dW1 = dZ1 @ X.T
+    db1 = np.sum(dZ1, axis=1, keepdims=True)
+
+    # Update weights and biases
+    W3 -= lr * dW3
+    b3 -= lr * db3
+    W2 -= lr * dW2
+    b2 -= lr * db2
+    W1 -= lr * dW1
+    b1 -= lr * db1
+
+    return W1, b1, W2, b2, W3, b3
+
+
+# Calculate the loss
+def calculate_loss(Y, A3):
+    return 0.5 * np.sum((Y - A3) ** 2)
+
+
+# SGD with backpropagation
+def train_sgd(train_set, input_size, hidden_size, output_size, batch_size, lr, epochs):
+    # Initialize weights and biases
+    W1, W2, W3, bias, b1, b2, b3 = initialization(input_size, hidden_size, output_size)
+
+    # Extract data and labels
+    data = np.hstack([x[0] for x in train_set])  # Images as column vectors
+    labels = np.hstack([x[1] for x in train_set])  # Labels as column vectors
+
+    # Track loss
+    loss_values = []
+
+    start_time = time.time()
+
+    for epoch in range(epochs):
+        # Shuffle the training set
+        perm = np.random.permutation(data.shape[1])
+        data, labels = data[:, perm], labels[:, perm]
+
+        for i in range(0, data.shape[1], batch_size):
+            X_batch = data[:, i:i + batch_size]
+            Y_batch = labels[:, i:i + batch_size]
+
+            # Forward pass
+            Z1, A1, Z2, A2, Z3, A3 = forward_propagation(X_batch, W1, b1, W2, b2, W3, b3)
+
+            # Backward pass
+            W1, b1, W2, b2, W3, b3 = backward_propagation(
+                X_batch, Y_batch, Z1, A1, Z2, A2, Z3, A3, W1, W2, W3, lr
+            )
+
+        # Compute loss at the end of each epoch
+        _, _, _, _, _, A3_full = forward_propagation(data, W1, b1, W2, b2, W3, b3)
+        loss = calculate_loss(labels, A3_full)
+        loss_values.append(loss)
+        print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss:.4f}")
+
+    duration = time.time() - start_time
+    print(f"Training completed in {duration:.2f} seconds.")
+
+    return W1, b1, W2, b2, W3, b3, loss_values, duration
+
+
+# Evaluate the trained network
+def sgd_evaluate(data, labels, W1, b1, W2, b2, W3, b3):
+    _, _, _, _, _, A3 = forward_propagation(data, W1, b1, W2, b2, W3, b3)
+    predictions = np.argmax(A3, axis=0)
+    true_labels = np.argmax(labels, axis=0)
+    return accuracy(predictions, true_labels)
+
+
+# Example usage
+train_set = read_train_set(600)  # Load the first 600 images from the training set
+data = np.hstack([x[0] for x in train_set])  # Input data
+labels = np.hstack([x[1] for x in train_set])  # One-hot encoded labels
+
+# Hyperparameters
+input_size = 784
+hidden_size = 16
+output_size = 10
+batch_size = 6
+lr = 1
+epochs = 100
+
+# Train the network
+W1, b1, W2, b2, W3, b3, loss_values, duration = train_sgd(
+    train_set, input_size, hidden_size, output_size, batch_size, lr, epochs
+)
+
+# Evaluate accuracy
+acc = sgd_evaluate(data, labels, W1, b1, W2, b2, W3, b3)
+print(f"Accuracy: {acc * 100:.2f}%")
+
+# Plot loss over epochs
+plt.plot(range(1, epochs + 1), loss_values, label="Loss")
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+plt.title("Training Loss Over Epochs")
+plt.legend()
+plt.grid(True)
+plt.show()
