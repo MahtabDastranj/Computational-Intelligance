@@ -79,8 +79,17 @@ def genetic_algorithm():
     # Final Step: Calculate final fitness and select the best solution
     final_fitness = np.array([calculate_fitness(chromosome) for chromosome in population])
     best_index = np.argmax(final_fitness)
-    print("\nFinal Best Chromosome:", population[best_index])
+    best_chromosome = population[best_index]
+    chosen_gems = gemstone_df[best_chromosome == 1]
+    total_weight = chosen_gems['weight'].sum()
+    total_worth = chosen_gems['worth'].sum()
+
+    print("\nFinal Best Chromosome:", best_chromosome)
     print("Best Fitness:", final_fitness[best_index])
+    print("\nFinal Best Chromosome:", best_chromosome)
+    print("Chosen Gemstones:\n", chosen_gems)
+    print(f"Total Weight: {total_weight}")
+    print(f"Total Worth (Fitness): {total_worth}")
 
 
 # Run the Genetic Algorithm
