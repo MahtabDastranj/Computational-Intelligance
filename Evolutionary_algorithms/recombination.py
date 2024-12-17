@@ -8,7 +8,7 @@ num = len(gemstones)
 population = 9
 max_weight = 25
 crossover_point = 5  # One-point crossover between 5th and 6th gene
-mutation_rate = 1  # 1 per offspring
+mutation_rate = 1  # 1 mutation per offspring
 
 # Convert gemstones to a DataFrame for easy access
 gemstone_df = pd.DataFrame(gemstones).T
