@@ -85,8 +85,6 @@ def genetic_algorithm():
     total_worth = chosen_gems['worth'].sum()
 
     print("\nFinal Best Chromosome:", best_chromosome)
-    print("Best Fitness:", final_fitness[best_index])
-    print("\nFinal Best Chromosome:", best_chromosome)
     print("Chosen Gemstones:\n", chosen_gems)
     print(f"Total Weight: {total_weight}")
     print(f"Total Worth (Fitness): {total_worth}")
