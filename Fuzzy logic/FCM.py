@@ -6,14 +6,14 @@ from mpl_toolkits.mplot3d import Axes3D
 
 # FCM Algorithm Functions
 def calculate_membership_matrix(data, centers, m):
-    num_points = data.shape[0]
-    num_clusters = centers.shape[0]
-    membership_matrix = np.zeros((num_points, num_clusters))
+    n_point = data.shape[0]
+    n_cluster = centers.shape[0]
+    membership_matrix = np.zeros((n_point, n_cluster))
 
-    for k in range(num_points):
-        for i in range(num_clusters):
+    for k in range(n_point):
+        for i in range(n_cluster):
             numerator = np.linalg.norm(data[k] - centers[i])
-            denominator = np.sum([np.linalg.norm(data[k] - centers[j]) ** (2 / (m - 1)) for j in range(num_clusters)])
+            denominator = np.sum([np.linalg.norm(data[k] - centers[j]) ** (2 / (m - 1)) for j in range(n_cluster)])
             if denominator == 0 or numerator == 0:
                 membership_matrix[k, i] = 1
             else:
@@ -123,26 +123,32 @@ def plot_clustering_results(data, num_clusters, m=2):
 
 # Main Execution
 if __name__ == "__main__":
-    # Read data from CSV file
-    data_file = 'data4.csv'
-    data = pd.read_csv(data_file)
-    print(data.head())
-    data = data.values  # Convert to NumPy array without the index
+    # List of data files
+    data_files = ['data1.csv', 'data2.csv', 'data3.csv', 'data4.csv']
 
-    # Check the number of dimensions
-    num_dimensions = data.shape[1]
-    print(f"Number of dimensions: {num_dimensions}")
+    for file in data_files:
+        print(f"Processing file: {file}")
 
-    if num_dimensions == 4:
-        # Use only the first 2 columns for clustering
-        data = data[:, :3]
+        # Read data from the current CSV file
+        data = pd.read_csv(file)
+        print(data.head())
+        data = data.values  # Convert to NumPy array without the index
+
+        # Check the number of dimensions
         num_dimensions = data.shape[1]
+        print(f"Number of dimensions: {num_dimensions}")
 
-    if num_dimensions > 4:
-        print("Data has more than 4 dimensions. Cannot plot.")
-    else:
-        # Plot Cost Function
-        suggested_clusters = plot_cost_function(data, max_clusters=5, m=2)
+        if num_dimensions == 4:
+            # Use only the first 3 columns for clustering
+            data = data[:, :3]
+            num_dimensions = data.shape[1]
 
-        # Plot Clustering Results with Suggested Number of Clusters
-        plot_clustering_results(data, 3, m=2)
+        if num_dimensions > 4:
+            print("Data has more than 4 dimensions. Cannot plot.")
+        else:
+            print(f"Running FCM and plotting for file: {file}")
+            # Analyze cost function
+            suggested_clusters = plot_cost_function(data, max_clusters=5, m=2)
+            # Plot clustering results
+            plot_clustering_results(data, 3, m=2)
+
