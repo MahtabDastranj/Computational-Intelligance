@@ -1,27 +1,28 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 
 # FCM
-def calculate_membership_matrix(data, centers, m):
+# Calculating membership matrix
+def mm(data, centers, m):
     n_point = data.shape[0]
     n_cluster = centers.shape[0]
     membership_matrix = np.zeros((n_point, n_cluster))
 
-    for k in range(n_point):
-        for i in range(n_cluster):
-            numerator = np.linalg.norm(data[k] - centers[i])
-            denominator = np.sum([np.linalg.norm(data[k] - centers[j]) ** (2 / (m - 1)) for j in range(n_cluster)])
+    for i in range(n_point):
+        for j in range(n_cluster):
+            numerator = np.linalg.norm(data[i] - centers[j])
+            denominator = np.sum([np.linalg.norm(data[i] - centers[j]) ** (2 / (m - 1)) for j in range(n_cluster)])
             if denominator == 0 or numerator == 0:
-                membership_matrix[k, i] = 1
+                membership_matrix[i, j] = 1
             else:
-                membership_matrix[k, i] = (numerator / denominator) ** -1
+                membership_matrix[i, j] = (numerator / denominator) ** -1
     return membership_matrix
 
 
-def calculate_cluster_centers(data, membership_matrix, m):
+# Calculating centers of clusters
+def cc(data, membership_matrix, m):
     num_clusters = membership_matrix.shape[1]
     num_features = data.shape[1]
     centers = np.zeros((num_clusters, num_features))
@@ -38,9 +39,9 @@ def calculate_cluster_centers(data, membership_matrix, m):
 
 def calculate_cost_function(data, centers, membership_matrix, m):
     cost = 0
-    for k in range(data.shape[0]):
-        for i in range(centers.shape[0]):
-            cost += (membership_matrix[k, i] ** m) * np.linalg.norm(data[k] - centers[i]) ** 2
+    for i in range(data.shape[0]):
+        for j in range(centers.shape[0]):
+            cost += (membership_matrix[i, j] ** m) * np.linalg.norm(data[i] - centers[j]) ** 2
     return cost
 
 
@@ -49,8 +50,8 @@ def fcm(data, num_clusters, m=2, max_iter=200, tol=0.5):
     prev_cost = np.inf
 
     for iteration in range(max_iter):
-        membership_matrix = calculate_membership_matrix(data, centers, m)
-        centers = calculate_cluster_centers(data, membership_matrix, m)
+        membership_matrix = mm(data, centers, m)
+        centers = cc(data, membership_matrix, m)
         cost = calculate_cost_function(data, centers, membership_matrix, m)
 
         if iteration % 40 == 0:print(f"Iteration {iteration}: Cost = {cost}")
@@ -59,8 +60,8 @@ def fcm(data, num_clusters, m=2, max_iter=200, tol=0.5):
             print(f"Converged after {iteration + 1} iterations.")
             break
         prev_cost = cost
-    else:
-        print(f"Couldn't converge after {max_iter} iterations.")
+
+    else: print(f"Couldn't converge after {max_iter} iterations.")
 
     return centers, membership_matrix, cost
 
@@ -85,8 +86,8 @@ def cost_visualization(data, max_clusters, m=2):
 
 
 def clustering_visualization(data, num_clusters, m=2):
-    centers, membership_matrix, _ = fcm(data, num_clusters, m)
-    cluster_labels = np.argmax(membership_matrix, axis=1)
+    centers, mm, _ = fcm(data, num_clusters, m)
+    cluster_labels = np.argmax(mm, axis=1)
     print(f"Cluster Centers:\n{centers}")
 
     num_dimensions = data.shape[1]
