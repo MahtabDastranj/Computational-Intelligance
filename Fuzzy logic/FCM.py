@@ -50,17 +50,13 @@ def fcm(data, num_clusters, m=2, max_iter=200, tol=0.5):
     prev_cost = np.inf
 
     for iteration in range(max_iter):
-        # Calculate membership matrix
         membership_matrix = calculate_membership_matrix(data, centers, m)
-        # Update cluster centers
         centers = calculate_cluster_centers(data, membership_matrix, m)
-        # Calculate cost function
         cost = calculate_cost_function(data, centers, membership_matrix, m)
 
-        if iteration % 40 == 0:
-            print(f"Iteration {iteration}: Cost = {cost}")
+        if iteration % 40 == 0:print(f"Iteration {iteration}: Cost = {cost}")
 
-        if abs(prev_cost - cost) < tol:
+        elif abs(prev_cost - cost) < tol:
             print(f"Converged after {iteration + 1} iterations.")
             break
         prev_cost = cost
@@ -70,47 +66,47 @@ def fcm(data, num_clusters, m=2, max_iter=200, tol=0.5):
     return centers, membership_matrix, cost
 
 
-# Plot Cost Function and Determine Suggested Clusters
-def plot_cost_function(data, max_clusters, m=2):
+def cost_visualization(data, max_clusters, m=2):
     costs = []
     for c in range(1, max_clusters + 1):
         # Run FCM to get the cost
         _, _, cost = fcm(data, c, m)
         costs.append(cost)
 
-    # Plot the cost function
-    plt.plot(range(1, max_clusters + 1), costs, marker='o')
+    # Change the line and marker colors
+    plt.plot(range(1, max_clusters + 1), costs, marker='o', linestyle='--', color='blue')
     plt.xlabel('Number of Clusters')
     plt.ylabel('Cost Function')
     plt.title('Cost Function vs. Number of Clusters')
+    plt.grid(True, linestyle=':', alpha=0.7)
     plt.show()
 
-    # Return the suggested number of clusters (elbow method)
+    # Elbow method
     suggested_clusters = np.argmin(np.diff(np.diff(costs))) + 2
     print(f"Suggested Number of Clusters: {suggested_clusters}")
     return suggested_clusters
 
 
-# Plot Clustering Results
-def plot_clustering_results(data, num_clusters, m=2):
+def clustering_visualization(data, num_clusters, m=2):
     centers, membership_matrix, _ = fcm(data, num_clusters, m)
-    cluster_labels = np.argmax(membership_matrix, axis=1)  # Defuzzify
+    cluster_labels = np.argmax(membership_matrix, axis=1)
     print(f"Cluster Centers:\n{centers}")
 
     num_dimensions = data.shape[1]
-    if num_dimensions == 2:  # 2D Data
-        plt.scatter(data[:, 0], data[:, 1], c=cluster_labels, cmap='viridis', s=50, alpha=0.7)
-        plt.scatter(centers[:, 0], centers[:, 1], color='red', marker='x', s=200, label='Centers')
+    if num_dimensions == 2:
+        # Change colormap and center colors
+        plt.scatter(data[:, 0], data[:, 1], c=cluster_labels, cmap='plasma', s=50, alpha=0.7)
+        plt.scatter(centers[:, 0], centers[:, 1], color='black', marker='*', s=200, label='Centers')
         plt.title(f'Clustering Result (C={num_clusters})')
         plt.legend()
         plt.show()
 
-    elif num_dimensions == 3:  # 3D Data
+    elif num_dimensions == 3:
         fig = plt.figure()
-        print("3D Data")
         ax = fig.add_subplot(111, projection='3d')
-        ax.scatter(data[:, 0], data[:, 1], data[:, 2], c=cluster_labels, cmap='viridis', s=50, alpha=0.7)
-        ax.scatter(centers[:, 0], centers[:, 1], centers[:, 2], color='red', marker='x', s=200, label='Centers')
+        # Change colormap and center colors
+        ax.scatter(data[:, 0], data[:, 1], data[:, 2], c=cluster_labels, cmap='coolwarm', s=50, alpha=0.7)
+        ax.scatter(centers[:, 0], centers[:, 1], centers[:, 2], color='black', marker='*', s=200, label='Centers')
         ax.set_title(f'Clustering Result (C={num_clusters})')
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
@@ -121,25 +117,20 @@ def plot_clustering_results(data, num_clusters, m=2):
         print("Data has more than 4 dimensions. Cannot plot.")
 
 
-# Main Execution
 if __name__ == "__main__":
-    # List of data files
     data_files = ['data1.csv', 'data2.csv', 'data3.csv', 'data4.csv']
 
     for file in data_files:
         print(f"Processing file: {file}")
 
-        # Read data from the current CSV file
         data = pd.read_csv(file)
         print(data.head())
-        data = data.values  # Convert to NumPy array without the index
-
-        # Check the number of dimensions
+        data = data.values
         num_dimensions = data.shape[1]
         print(f"Number of dimensions: {num_dimensions}")
 
         if num_dimensions == 4:
-            # Use only the first 3 columns for clustering
+            # First 3 columns for clustering
             data = data[:, :3]
             num_dimensions = data.shape[1]
 
@@ -147,8 +138,6 @@ if __name__ == "__main__":
             print("Data has more than 4 dimensions. Cannot plot.")
         else:
             print(f"Running FCM and plotting for file: {file}")
-            # Analyze cost function
-            suggested_clusters = plot_cost_function(data, max_clusters=5, m=2)
-            # Plot clustering results
-            plot_clustering_results(data, 3, m=2)
+            offered_clusters = cost_visualization(data, max_clusters=5, m=2)
+            clustering_visualization(data, 3, m=2)
 
