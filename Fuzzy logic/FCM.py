@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
-# FCM Algorithm Functions
+# FCM
 def calculate_membership_matrix(data, centers, m):
     n_point = data.shape[0]
     n_cluster = centers.shape[0]
@@ -45,7 +45,6 @@ def calculate_cost_function(data, centers, membership_matrix, m):
 
 
 def fcm(data, num_clusters, m=2, max_iter=200, tol=0.5):
-    # Randomly initialize cluster centers
     centers = data[np.random.choice(data.shape[0], num_clusters, replace=False)]
     prev_cost = np.inf
 
@@ -69,11 +68,9 @@ def fcm(data, num_clusters, m=2, max_iter=200, tol=0.5):
 def cost_visualization(data, max_clusters, m=2):
     costs = []
     for c in range(1, max_clusters + 1):
-        # Run FCM to get the cost
         _, _, cost = fcm(data, c, m)
         costs.append(cost)
 
-    # Change the line and marker colors
     plt.plot(range(1, max_clusters + 1), costs, marker='o', linestyle='--', color='blue')
     plt.xlabel('Number of Clusters')
     plt.ylabel('Cost Function')
@@ -94,7 +91,6 @@ def clustering_visualization(data, num_clusters, m=2):
 
     num_dimensions = data.shape[1]
     if num_dimensions == 2:
-        # Change colormap and center colors
         plt.scatter(data[:, 0], data[:, 1], c=cluster_labels, cmap='plasma', s=50, alpha=0.7)
         plt.scatter(centers[:, 0], centers[:, 1], color='black', marker='*', s=200, label='Centers')
         plt.title(f'Clustering Result (C={num_clusters})')
@@ -104,7 +100,6 @@ def clustering_visualization(data, num_clusters, m=2):
     elif num_dimensions == 3:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
-        # Change colormap and center colors
         ax.scatter(data[:, 0], data[:, 1], data[:, 2], c=cluster_labels, cmap='coolwarm', s=50, alpha=0.7)
         ax.scatter(centers[:, 0], centers[:, 1], centers[:, 2], color='black', marker='*', s=200, label='Centers')
         ax.set_title(f'Clustering Result (C={num_clusters})')
@@ -114,20 +109,21 @@ def clustering_visualization(data, num_clusters, m=2):
         plt.legend()
         plt.show()
     else:
-        print("Data has more than 4 dimensions. Cannot plot.")
+        print("Dimension is too high it can't be processed.")
 
 
 if __name__ == "__main__":
     data_files = ['data1.csv', 'data2.csv', 'data3.csv', 'data4.csv']
+    sample_files = ['data1.csv', 'data2.csv']
 
-    for file in data_files:
+    for file in sample_files:
         print(f"Processing file: {file}")
 
         data = pd.read_csv(file)
         print(data.head())
         data = data.values
         num_dimensions = data.shape[1]
-        print(f"Number of dimensions: {num_dimensions}")
+        print(f"Dimensions: {num_dimensions}")
 
         if num_dimensions == 4:
             # First 3 columns for clustering
@@ -135,9 +131,9 @@ if __name__ == "__main__":
             num_dimensions = data.shape[1]
 
         if num_dimensions > 4:
-            print("Data has more than 4 dimensions. Cannot plot.")
+            print("Data has more than 4 dimensions. Cannot demonstrate.")
         else:
-            print(f"Running FCM and plotting for file: {file}")
+            print(f"FCM : {file}")
             offered_clusters = cost_visualization(data, max_clusters=5, m=2)
             clustering_visualization(data, 3, m=2)
 
